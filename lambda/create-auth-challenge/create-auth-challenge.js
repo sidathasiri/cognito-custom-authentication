@@ -1,5 +1,5 @@
-const AWS = require('aws-sdk');
-const sns = new AWS.SNS();
+const { SNSClient, PublishCommand } = require('@aws-sdk/client-sns');
+const sns = new SNSClient();
 
 exports.handler = async (event) => {
   const phoneNumber = event.request.userAttributes.phone_number;
@@ -10,12 +10,11 @@ exports.handler = async (event) => {
 
     if (event.request.session.length === 0) {
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
-      console.log('Going to send OTP:', otp);
       
-      await sns.publish({
+      await sns.send(new PublishCommand({
         Message: `Your verification code is: ${otp}`,
         PhoneNumber: phoneNumber,
-      }).promise();
+      }));
 
       console.log('OTP sent successfully');
       
@@ -33,6 +32,5 @@ exports.handler = async (event) => {
     return event;
   } catch(e) {
     console.log('error:', e);
-    
   }
 };
